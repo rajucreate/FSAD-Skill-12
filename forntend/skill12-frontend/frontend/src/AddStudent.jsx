@@ -9,37 +9,42 @@ function AddStudent({ refresh, selected, setSelected }) {
   });
 
   const isEditing = Boolean(selected?.id);
-  const formData = isEditing ? selected : student;
+  const formData = isEditing ? selected || {} : student;
 
   const handleChange = (e) => {
     const { name, value } = e.target;
 
     if (isEditing) {
       setSelected({ ...selected, [name]: value });
-      return;
+    } else {
+      setStudent({ ...student, [name]: value });
     }
-
-    setStudent({ ...student, [name]: value });
   };
 
   const handleSubmit = () => {
     const payload = isEditing ? selected : student;
 
+    // 🔥 validation
+    if (!payload.name || !payload.email || !payload.course) {
+      alert("All fields are required");
+      return;
+    }
+
     if (isEditing) {
-      // 🔥 UPDATE
-      axios.put(`http://localhost:8080/students/${selected.id}`, payload)
+      axios.put(`/students/${selected.id}`, payload)
         .then(() => {
           refresh();
           setStudent({ name: "", email: "", course: "" });
           setSelected(null);
-        });
+        })
+        .catch(err => console.error(err));
     } else {
-      // 🔥 ADD
-      axios.post("http://localhost:8080/students", payload)
+      axios.post("/students", payload)
         .then(() => {
           refresh();
           setStudent({ name: "", email: "", course: "" });
-        });
+        })
+        .catch(err => console.error(err));
     }
   };
 
@@ -54,6 +59,10 @@ function AddStudent({ refresh, selected, setSelected }) {
       <button onClick={handleSubmit}>
         {isEditing ? "Update" : "Add"}
       </button>
+
+      {isEditing && (
+        <button onClick={() => setSelected(null)}>Cancel</button>
+      )}
     </div>
   );
 }
