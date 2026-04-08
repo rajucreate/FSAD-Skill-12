@@ -1,12 +1,12 @@
 package com.klu.serviceImpl;
 
-import java.util.List;
+import com.klu.entity.Student;
+import com.klu.repo.StudentRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.klu.entity.Student;
-import com.klu.repo.StudentRepository;
+import java.util.List;
 
 @Service
 public class StudentService {
@@ -14,20 +14,25 @@ public class StudentService {
     @Autowired
     private StudentRepository repo;
 
+    public Student saveStudent(Student student) {
+        return repo.save(student);
+    }
+
     public List<Student> getAllStudents() {
         return repo.findAll();
     }
 
-    public Student addStudent(Student student) {
-        return repo.save(student);
+    public Student getStudentById(Long id) {
+        return repo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Student not found"));
     }
 
     public Student updateStudent(Long id, Student student) {
-        Student s = repo.findById(id).orElseThrow();
-        s.setName(student.getName());
-        s.setEmail(student.getEmail());
-        s.setCourse(student.getCourse());
-        return repo.save(s);
+        Student existing = getStudentById(id);
+        existing.setName(student.getName());
+        existing.setEmail(student.getEmail());
+        existing.setCourse(student.getCourse());
+        return repo.save(existing);
     }
 
     public void deleteStudent(Long id) {
